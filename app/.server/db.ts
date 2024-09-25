@@ -1,44 +1,55 @@
-// /app/db.server.ts
-import { type Authenticator } from "remix-auth-webauthn/server";
+import { drizzle } from "drizzle-orm/node-postgres";
+import pkg from "pg";
+const { Client } = pkg;
+import * as schema from "~/.server/schema";
+import { eq } from "drizzle-orm";
 
-export type User = { id: string; username: string };
+const client = new Client({
+  connectionString: "postgres://postgres:postgres@127.0.0.1:5432/postgres",
+});
 
-const authenticators = new Map<string, Authenticator>();
-const users = new Map<string, User>();
-export function getAuthenticatorById(id: string) {
-  return authenticators.get(id) || null;
+await client.connect();
+export const db = drizzle(client, { schema });
+
+export async function getAuthenticatorById(id: string) {
+  if (!id) return null;
+  return await db.query.authenticators.findFirst({
+    where: eq(schema.authenticators.credentialId, id),
+  });
 }
-export function getAuthenticators(user: User | null) {
+
+export async function getAuthenticators(user: schema.User | null) {
   if (!user) return [];
-
-  const userAuthenticators: Authenticator[] = [];
-  authenticators.forEach((authenticator) => {
-    if (authenticator.userId === user.id) {
-      userAuthenticators.push(authenticator);
-    }
+  return await db.query.authenticators.findMany({
+    where: eq(schema.authenticators.userId, user.id),
   });
+}
 
-  return userAuthenticators;
-}
-export function getUserByUsername(username: string) {
-  users.forEach((user) => {
-    if (user.username === username) {
-      return user;
-    }
+export async function getUserByUsername(username: string) {
+  return await db.query.users.findFirst({
+    where: eq(schema.users.username, username),
   });
-  return null;
 }
-export function getUserById(id: string) {
-  return users.get(id) || null;
+
+export async function getUserById(id: string) {
+  const result = await db.query.users.findFirst({
+    where: eq(schema.users.id, id),
+  });
+  if (!result) return null;
+  return result;
 }
-export function createAuthenticator(
-  authenticator: Omit<Authenticator, "userId">,
-  userId: string
+
+export async function createAuthenticator(
+  authenticator: Omit<schema.NewAuthenticator, "id">
 ) {
-  authenticators.set(authenticator.credentialID, { ...authenticator, userId });
+  const [newAuthenticator] = await db
+    .insert(schema.authenticators)
+    .values(authenticator)
+    .returning();
+  return newAuthenticator;
 }
-export function createUser(username: string) {
-  const user = { id: Math.random().toString(36), username };
-  users.set(user.id, user);
+
+export async function createUser(username: string): Promise<schema.User> {
+  const [user] = await db.insert(schema.users).values({ username }).returning();
   return user;
 }

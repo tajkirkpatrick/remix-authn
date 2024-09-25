@@ -1,0 +1,1 @@
+ALTER TABLE "authenticators" DROP CONSTRAINT "authenticators_credential_id_unique";
