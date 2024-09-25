@@ -15,6 +15,13 @@
       "when": 1727297813466,
       "tag": "0001_wild_cloak",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1727300505056,
+      "tag": "0002_optimal_nightshade",
+      "breakpoints": true
     }
   ]
 }

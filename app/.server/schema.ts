@@ -34,7 +34,7 @@ export const authenticators = pgTable(
     credentialId: text("credential_id").notNull(),
     userId: text("user_id")
       .notNull()
-      .references(() => users.id),
+      .references(() => users.id, { onDelete: "cascade" }),
     credentialPublicKey: text("credential_public_key").notNull(),
     counter: bigint("counter", { mode: "number" }).notNull(),
     credentialDeviceType: varchar("credential_device_type", {
