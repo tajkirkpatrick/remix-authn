@@ -22,6 +22,7 @@
     "react-dom": "^18.2.0",
     "remix-auth": "^3.7.0",
     "remix-auth-webauthn": "^0.3.4",
+    "sst": "3.1.38",
     "ulid": "^2.3.0"
   },
   "devDependencies": {
